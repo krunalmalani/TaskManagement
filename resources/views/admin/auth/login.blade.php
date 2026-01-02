@@ -191,7 +191,7 @@
                                     const userType = res.data.user.user_type;
                                     console.log(userType);
                                     if (userType === 'super_admin') {
-                                        window.location.href = "{{ url('/admin/super-admin-dashboard') }}";
+                                        window.location.href = "{{ url('/super-admin/dashboard') }}";
                                     } else {
                                         window.location.href = "{{ url('/admin/dashboard') }}";
                                     }

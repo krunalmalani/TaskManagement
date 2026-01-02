@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\User;
+use App\Models\Company;
+use App\Models\UserCompany;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -22,6 +25,7 @@ class AdminAuthApiController extends BaseController
             'last_name'    => 'required|string|max:255',
             'email'        => 'required|string|email|max:255|unique:users',
             'mobile'       => 'required|string',
+            'company_name' => 'required|string|max:255',
             'password'     => 'required|string|min:6|confirmed',
         ]);
 
@@ -46,6 +50,45 @@ class AdminAuthApiController extends BaseController
             'is_active'       => 1,
             'email_verified'  => 1,
             'mobile_verified' => 1,
+            'created_by'      => $user->id ?? null,
+        ]);
+
+        // Generate unique company code
+        $companyCode = 'COM-' . strtoupper(uniqid());
+
+        // Create company
+        $company = Company::create([
+            'name'         => $validated['company_name'],
+            'code'         => $companyCode,
+            'is_active'    => 1,
+            'is_deleted'   => 0,
+            'created_by'   => $user->id,
+        ]);
+
+        // Store user-company relationship
+        UserCompany::create([
+            'user_id'    => $user->id,
+            'company_id' => $company->id,
+        ]);
+
+        // Log registration activity
+        ActivityLog::create([
+            'user_id'     => $user->id,
+            'company_id'  => $company->id,
+            'branch_id'  => null,
+            'department_id'  => null,
+            'module'      => 'User',
+            'title'       => 'User Registration',
+            'description' => $user->full_name . ' registered successfully',
+            'log_name'    => 'registration',
+            'properties'  => json_encode([
+                'user_code'    => $user->user_code,
+                'email'        => $user->email,
+                'company_code' => $company->code,
+                'company_name' => $company->name,
+            ]),
+            'ip_address'  => request()->ip(),
+            'user_agent'  => request()->header('User-Agent'),
         ]);
 
         /* -------------------------------------------------
@@ -75,6 +118,11 @@ class AdminAuthApiController extends BaseController
                 'name'  => $user->full_name,
                 'email' => $user->email,
                 'type'  => $user->user_type,
+            ],
+            'company' => [
+                'id'   => $company->id,
+                'name' => $company->name,
+                'code' => $company->code,
             ],
             'access_token' => $token,
             'token_type'   => 'Bearer',
@@ -171,6 +219,10 @@ class AdminAuthApiController extends BaseController
 
         return $this->sendResponse([], 'Session cleared successfully', 200);
     }
+
+    /**
+     * Refresh JWT token
+     */
     public function refresh(Request $request)
     {
         try {

@@ -54,6 +54,8 @@
 </head>
 
 <body>
+    <!-- Toast Container (Bootstrap Native) -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Begin Wrapper -->
     <div class="main-wrapper">
@@ -117,6 +119,19 @@
 
     <!-- Flatpickr JS -->
     <script src="{{asset('assets/plugins/flatpickr/flatpickr.min.js')}}"></script>
+
+    <!-- Datatable JS -->
+    <script src="{{asset('assets/plugins/datatables/js/jquery.dataTables.min.js')}}"></script>
+    <script src="{{asset('assets/plugins/datatables/js/dataTables.bootstrap5.min.js')}}"></script>
+
+    <!-- Axios for API calls -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Common Utilities -->
+    <script src="{{asset('assets/js/common.js')}}"></script>
+
+    <!-- Custom Datatable & CRUD -->
+    <script src="{{asset('assets/js/custom.js')}}"></script>
 
     <!-- Main JS -->
     <script src="{{asset('assets/js/script.js')}}"></script>

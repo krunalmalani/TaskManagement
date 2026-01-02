@@ -28,11 +28,6 @@ class AdminAuthController extends Controller
         return view('admin.dashboards.dashboard');
     }
 
-    public function superAdminDashboard()
-    {   
-        return view('sadmin.dashboard.super-admin');
-    }
-
     public function logout(Request $request)
     {
         try {
@@ -56,5 +51,10 @@ class AdminAuthController extends Controller
         }
 
         return redirect()->route('login');
+    }
+
+    public function list_role()
+    {   
+        return view('admin.role.list_role');
     }
 }

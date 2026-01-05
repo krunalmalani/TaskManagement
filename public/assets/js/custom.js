@@ -361,12 +361,13 @@ function handleFormSubmit(config) {
 // ========================================
 
 /**
- * Handle bulk delete action with confirmation
+ * Common handler for bulk delete across all modules
  * @param {object} config - Configuration object
  *  - buttonSelector: Selector for bulk delete button
  *  - confirmSelector: ID of confirmation modal
  *  - confirmButtonId: ID of confirm button in modal
  *  - apiEndpoint: API endpoint for bulk delete
+ *  - itemName: Singular name for items (default: 'item')
  *  - onSuccess: Callback function on success
  * @returns {void}
  */
@@ -374,20 +375,29 @@ function handleBulkDelete(config) {
     const bulkDeleteBtn = document.querySelector(config.buttonSelector);
     if (!bulkDeleteBtn) return;
     
+    // Get configuration defaults
+    const itemName = config.itemName || 'item';
+    const itemsName = itemName + (itemName.endsWith('s') ? 'es' : 's');
+    
     // Handle bulk delete button click
     bulkDeleteBtn.addEventListener('click', function() {
-        // Get all checked checkboxes (exclude select all checkbox)
-        const checkedBoxes = document.querySelectorAll('#usersTableBody input[type="checkbox"]:checked');
+        // Get selected items from datatable instance
+        let selectedIds = [];
         
-        if (checkedBoxes.length === 0) {
-            showToast('Please select at least one user', 'warning');
+        if (window.datatableInstance && window.datatableInstance.selectedItems) {
+            selectedIds = window.datatableInstance.selectedItems;
+        } else {
+            // Fallback: get from checkboxes if datatable instance not available
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            selectedIds = Array.from(checkedBoxes).map(box => box.value || box.dataset.id);
+        }
+        
+        if (selectedIds.length === 0) {
+            showToast(`Please select at least one ${itemName}`, 'warning');
             return;
         }
         
-        // Get IDs from checked boxes
-        const ids = Array.from(checkedBoxes).map(box => box.dataset.id);
-        
-        log(`Selected ${ids.length} users for deletion`, 'info');
+        log(`Selected ${selectedIds.length} ${itemsName} for deletion`, 'info');
         
         // Show confirmation modal
         const modal = document.querySelector(config.confirmSelector);
@@ -395,59 +405,167 @@ function handleBulkDelete(config) {
             // Update modal text to show count
             const modalBody = modal.querySelector('.modal-body p');
             if (modalBody) {
-                modalBody.textContent = `Are you sure you want to delete ${ids.length} selected user(s)? This action cannot be undone.`;
+                const itemWord = selectedIds.length === 1 ? itemName : itemsName;
+                modalBody.textContent = `Are you sure you want to delete ${selectedIds.length} selected ${itemWord}? This action cannot be undone.`;
             }
             new bootstrap.Modal(modal).show();
             
             // Store IDs for confirmation handler
-            modal.dataset.bulkIds = JSON.stringify(ids);
+            modal.dataset.bulkIds = JSON.stringify(selectedIds);
+            modal.dataset.isBulk = 'true';
         }
     });
     
     // Handle confirmation
     const confirmBtn = document.querySelector(`#${config.confirmButtonId}`);
     if (confirmBtn) {
-        confirmBtn.addEventListener('click', function() {
+        // Use event delegation to avoid multiple listeners
+        confirmBtn.removeEventListener('click', confirmBtn._bulkDeleteHandler);
+        
+        confirmBtn._bulkDeleteHandler = function() {
             const modal = document.querySelector(config.confirmSelector);
             const bulkIds = JSON.parse(modal.dataset.bulkIds || '[]');
             
             if (bulkIds.length === 0) return;
             
-            log(`Deleting ${bulkIds.length} users`, 'info');
+            log(`Deleting ${bulkIds.length} ${itemsName}`, 'info');
             setButtonState(config.buttonSelector, true);
-            
-            // Log the exact request being sent
-            console.log('Bulk delete request:', {
-                url: `${config.apiEndpoint}/bulk-delete`,
-                data: { ids: bulkIds },
-                ids: bulkIds,
-                idsType: typeof bulkIds,
-                idsLength: bulkIds.length
-            });
             
             // Send bulk delete request
             apiPost(`${config.apiEndpoint}/bulk-delete`, { ids: bulkIds })
                 .then(response => {
-                    showToast(response.data.message || 'Users deleted successfully', 'success');
+                    showToast(response.data.message || `${bulkIds.length} ${itemsName} deleted successfully`, 'success');
                     if (config.onSuccess) config.onSuccess();
                     if (window.datatableInstance) {
+                        window.datatableInstance.selectedItems = [];
                         window.datatableInstance.refresh();
                     }
                     // Close modal
                     const modalInstance = bootstrap.Modal.getInstance(modal);
                     if (modalInstance) modalInstance.hide();
-                    // Reset checkboxes
-                    document.querySelectorAll('#usersTableBody input[type="checkbox"]').forEach(cb => cb.checked = false);
-                    const checkboxAll = document.querySelector('#checkboxAll');
-                    if (checkboxAll) checkboxAll.checked = false;
                     setButtonState(config.buttonSelector, false);
                 })
                 .catch(() => {
                     log('Bulk delete failed', 'error');
                     setButtonState(config.buttonSelector, false);
                 });
-        });
+        };
+        
+        confirmBtn.addEventListener('click', confirmBtn._bulkDeleteHandler);
     }
+}
+
+/**
+ * Common delete handler for single and bulk delete operations
+ * Uses the common modal from master layout (#commonDeleteModal)
+ * @param {object} config - Configuration object
+ *  - deleteButtonSelector: Selector for delete buttons (e.g., '.delete-item-btn')
+ *  - apiEndpoint: API endpoint base (e.g., '/api/v1/super-admin/users')
+ *  - itemName: Singular name for items (default: 'item')
+ *  - onSuccess: Callback function on success
+ * @returns {void}
+ */
+function handleCommonDelete(config) {
+    const itemName = config.itemName || 'item';
+    const itemsName = itemName + (itemName.endsWith('s') ? 'es' : 's');
+    
+    // Handle individual delete button clicks
+    $(document).on('click', config.deleteButtonSelector, function() {
+        const itemId = $(this).data('id');
+        
+        // Update modal message
+        const modalMessage = document.getElementById('commonDeleteMessage');
+        if (modalMessage) {
+            modalMessage.innerHTML = `<p>Are you sure you want to delete this ${itemName}? This action cannot be undone.</p>`;
+        }
+        
+        // Store delete info in modal data attributes
+        const modal = document.getElementById('commonDeleteModal');
+        modal.dataset.ids = JSON.stringify([itemId]);
+        modal.dataset.isBulk = 'false';
+        modal.dataset.apiEndpoint = config.apiEndpoint;
+        modal.dataset.itemName = itemName;
+        modal.dataset.itemsName = itemsName;
+        
+        // Show modal
+        new bootstrap.Modal(modal).show();
+    });
+    
+    // Handle bulk delete confirmation
+    $(document).on('click', '#commonDeleteConfirmBtn', function() {
+        const modal = document.getElementById('commonDeleteModal');
+        const ids = JSON.parse(modal.dataset.ids || '[]');
+        const isBulk = modal.dataset.isBulk === 'true';
+        const apiEndpoint = modal.dataset.apiEndpoint;
+        const itemsName = modal.dataset.itemsName;
+        
+        if (ids.length === 0) return;
+        
+        // Construct URL and method
+        const url = isBulk ? `${apiEndpoint}/bulk-delete` : `${apiEndpoint}/${ids[0]}`;
+        const method = isBulk ? 'POST' : 'DELETE';
+        const data = isBulk ? { ids: ids } : {};
+        
+        // Execute delete
+        const apiCall = method === 'POST' ? apiPost(url, data) : apiDelete(url);
+        
+        apiCall.then(response => {
+            // Close modal
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) modalInstance.hide();
+            
+            // Show success message
+            showToast(response.data.message || `${ids.length} ${itemsName} deleted successfully`, 'success');
+            
+            // Execute callback
+            if (config.onSuccess) config.onSuccess();
+            
+            // Refresh datatable if available
+            if (window.datatableInstance) {
+                window.datatableInstance.selectedItems = [];
+                window.datatableInstance.refresh();
+            }
+            
+            // Clear checkboxes
+            $('.row-checkbox').prop('checked', false);
+            $('#checkboxAll').prop('checked', false);
+            if (window.datatableInstance) {
+                window.datatableInstance.updateBulkActions();
+            }
+        }).catch(error => {
+            showToast('Failed to delete', 'error');
+        });
+    });
+}
+
+/**
+ * Show common delete confirmation for bulk delete
+ * Used with handleCommonDelete for bulk operations
+ * @param {array} ids - Array of IDs to delete
+ * @param {string} itemName - Singular name for items
+ * @param {string} apiEndpoint - API endpoint base
+ * @returns {void}
+ */
+function showCommonBulkDeleteConfirmation(ids, itemName, apiEndpoint) {
+    const itemsName = itemName + (itemName.endsWith('s') ? 'es' : 's');
+    
+    // Update modal message
+    const modalMessage = document.getElementById('commonDeleteMessage');
+    if (modalMessage) {
+        const itemWord = ids.length === 1 ? itemName : itemsName;
+        modalMessage.innerHTML = `<p>Are you sure you want to delete ${ids.length} selected ${itemWord}? This action cannot be undone.</p>`;
+    }
+    
+    // Store delete info in modal data attributes
+    const modal = document.getElementById('commonDeleteModal');
+    modal.dataset.ids = JSON.stringify(ids);
+    modal.dataset.isBulk = 'true';
+    modal.dataset.apiEndpoint = apiEndpoint;
+    modal.dataset.itemName = itemName;
+    modal.dataset.itemsName = itemsName;
+    
+    // Show modal
+    new bootstrap.Modal(modal).show();
 }
 
 /**

@@ -80,6 +80,18 @@
 							</li>
 						</ul>
 					</li>
+					<li>
+						<ul>
+							<li class="submenu">
+								<a href="javascript:void(0);" class="{{ Route::currentRouteName() === 'super-admin-countries-index' ? 'active subdrop' : '' }}">
+									<i class="ti ti-dashboard"></i><span>Settings</span><span class="menu-arrow"></span>
+								</a>
+								<ul>
+									<li><a href="{{ route('super-admin-countries-index') }}" class="{{ Route::currentRouteName() === 'super-admin-countries-index' ? 'active' : '' }}">Country Management</a></li>
+								</ul>
+							</li>
+						</ul>
+					</li>
 				</ul>
 			@elseif($userData['type'] == 'admin')
 				<ul>

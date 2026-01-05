@@ -62,8 +62,15 @@ function getUser() {
  * @returns {void}
  */
 function setupAxiosHeaders() {
+    // Wait for axios to be available
+    if (typeof axios === 'undefined') {
+        console.warn('Axios library not yet loaded. Waiting...');
+        setTimeout(setupAxiosHeaders, 500);
+        return;
+    }
+    
     const token = getToken();
-    if (token && typeof axios !== 'undefined') {
+    if (token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
         axios.defaults.headers.common['Accept'] = 'application/json';
@@ -170,6 +177,12 @@ function showToast(message, type = 'info', duration = 1000) {
  * @returns {Promise} Axios promise
  */
 function apiGet(url, config = {}) {
+    if (typeof axios === 'undefined') {
+        const error = new Error('Axios library is not loaded');
+        handleApiError(error);
+        return Promise.reject(error);
+    }
+    
     const token = getToken();
     if (!token) {
         showToast('Session expired. Please login again.', 'error');
@@ -194,6 +207,12 @@ function apiGet(url, config = {}) {
  * @returns {Promise} Axios promise
  */
 function apiPost(url, data = {}, config = {}) {
+    if (typeof axios === 'undefined') {
+        const error = new Error('Axios library is not loaded');
+        handleApiError(error);
+        return Promise.reject(error);
+    }
+    
     const token = getToken();
     if (!token) {
         showToast('Session expired. Please login again.', 'error');
@@ -219,6 +238,12 @@ function apiPost(url, data = {}, config = {}) {
  * @returns {Promise} Axios promise
  */
 function apiPut(url, data = {}, config = {}) {
+    if (typeof axios === 'undefined') {
+        const error = new Error('Axios library is not loaded');
+        handleApiError(error);
+        return Promise.reject(error);
+    }
+    
     const token = getToken();
     if (!token) {
         showToast('Session expired. Please login again.', 'error');
@@ -257,6 +282,12 @@ function apiPut(url, data = {}, config = {}) {
  * @returns {Promise} Axios promise
  */
 function apiDelete(url, config = {}) {
+    if (typeof axios === 'undefined') {
+        const error = new Error('Axios library is not loaded');
+        handleApiError(error);
+        return Promise.reject(error);
+    }
+    
     const token = getToken();
     if (!token) {
         showToast('Session expired. Please login again.', 'error');

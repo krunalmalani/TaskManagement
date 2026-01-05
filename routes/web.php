@@ -33,6 +33,7 @@ Route::prefix('admin')->group(function () {
 Route::prefix('super-admin')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [SuperAdminDashboardController::class, 'superAdminDashboard'])->name('super-admin-dashboard');
     Route::get('/users', [SuperAdminUserController::class, 'index'])->name('super-admin-users-index');
+    Route::get('/countries', [SuperAdminUserController::class, 'country'])->name('super-admin-countries-index');
 });
 
 Route::post('/store-session', [AdminSessionController::class, 'store']);

@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AdminAuthApiController;
 
-use App\Http\Controllers\Api\V1\SuperAdminUserApiController;
+use App\Http\Controllers\Api\V1\sadmin\SuperAdminUserApiController;
+use App\Http\Controllers\Api\V1\sadmin\SuperAdminCountryApiController;
 
 Route::prefix('v1')->group(function () {
     // Public authentication routes (no middleware required)
@@ -20,13 +21,14 @@ Route::prefix('v1')->group(function () {
         // Super Admin User Management APIs
         Route::prefix('super-admin')->group(function () {
             // Collection routes (no {id} parameter)
-            Route::get('/users', [SuperAdminUserApiController::class, 'index'])->name('api.super-admin-users-index');
-            Route::post('/users', [SuperAdminUserApiController::class, 'store'])->name('api.super-admin-users-store');
-            Route::post('/users/bulk-delete', [SuperAdminUserApiController::class, 'bulkDestroy'])->name('api.super-admin-users-bulk-delete');
-            Route::get('/users/{id}', [SuperAdminUserApiController::class, 'show'])->name('api.super-admin-users-show');
-            Route::put('/users/{id}', [SuperAdminUserApiController::class, 'update'])->name('api.super-admin-users-update');
-            Route::post('/users/{id}', [SuperAdminUserApiController::class, 'update'])->name('api.super-admin-users-update-post');
-            Route::delete('/users/{id}', [SuperAdminUserApiController::class, 'destroy'])->name('api.super-admin-users-destroy');
+            Route::get('/users', [SuperAdminUserApiController::class, 'index']);
+            Route::post('/users', [SuperAdminUserApiController::class, 'store']);
+            Route::post('/users/bulk-delete', [SuperAdminUserApiController::class, 'bulkDestroy']);
+            Route::get('/users/{id}', [SuperAdminUserApiController::class, 'show']);
+            Route::post('/users/{id}', [SuperAdminUserApiController::class, 'update']);
+            Route::delete('/users/{id}', [SuperAdminUserApiController::class, 'destroy']);
+
+            Route::get('/countries', [SuperAdminCountryApiController::class, 'index']);
         });
     });
 });

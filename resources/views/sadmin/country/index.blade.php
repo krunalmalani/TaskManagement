@@ -4,7 +4,7 @@
 @extends('layouts.master', ['title' => 'Manage Countries'])
 
 @section('title')
-    <title>Manage Countries | Task Management</title>
+    <title>{{ __('country_index_page_title') }}</title>
 @endsection
 
 @section('css')
@@ -35,25 +35,25 @@
     $columns = [
         [
             'field' => 'country_name',
-            'header' => 'Name',
+            'header' => __('table_name'),
             'className' => 'col-name',
             'sortable' => true
         ],
         [
             'field' => 'code',
-            'header' => 'Code',
+            'header' => __('code'),
             'className' => 'col-code',
             'sortable' => true
         ],
         [
             'field' => 'short_name',
-            'header' => 'Short Name',
+            'header' => __('country_index_table_short_name'),
             'className' => 'col-short-name',
             'sortable' => true
         ],
         [
             'field' => 'is_active',
-            'header' => 'Status',
+            'header' => __('table_status'),
             'className' => 'col-status',
             'sortable' => true,
             'type' => 'boolean'
@@ -63,10 +63,10 @@
     $filters = [
         'status' => [
             'type' => 'checkbox',
-            'label' => 'Status',
+            'label' => __('status'),
             'options' => [
-                ['value' => '1', 'label' => 'Active'],
-                ['value' => '0', 'label' => 'Inactive']
+                ['value' => '1', 'label' => __('active')],
+                ['value' => '0', 'label' => __('inactive')]
             ]
         ]
     ];
@@ -77,99 +77,59 @@
     ];
     
     $breadcrumb = [
-        ['url' => route('super-admin-countries-index'), 'label' => 'Country'],
-        ['label' => 'Manage Countries']
+        ['url' => route('super-admin-countries-index'), 'label' => __('country_index_breadcrumb_parent')],
+        ['label' => __('country_index_breadcrumb_current')]
     ];
 @endphp
 
 <x-datatable 
     :config="$tableConfig"
     :columns="$columns"
-    title="Manage Countries"
+    title="{{ __('country_index_title') }}"
     :breadcrumb="$breadcrumb"
     :filters="$filters"
     :sortOptions="$sortOptions"
-    searchPlaceholder="Search countries..."
+    searchPlaceholder="{{ __('country_index_search_placeholder') }}"
 />
-
-<!-- Add Country Offcanvas -->
-    {{-- <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
+ <!-- Add Country Offcanvas -->
+    <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
         <div class="offcanvas-header border-bottom">
-            <h5 class="fw-semibold">Add New Country</h5>
+            <h5 class="fw-semibold">{{ __('country_index_add_modal_title') }}</h5>
             <button type="button" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
                 <i class="ti ti-x"></i>
             </button>
         </div>
         <div class="offcanvas-body">
-            <form id="addCountryForm" enctype="multipart/form-data">
-                @csrf
+            <form id="addCountryForm">
                 <div>
                     <!-- Basic Info -->
                     <div>
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="avatar avatar-xxl border border-dashed me-3 flex-shrink-0">
-                                        <img id="addUserImagePreview" src="{{ asset('assets/img/users/user-01.jpg') }}" alt="img" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-                                    </div>
-                                    <div class="d-inline-flex flex-column align-items-start">
-                                        <div class="drag-upload-btn btn btn-sm btn-primary position-relative mb-2">
-                                            <i class="ti ti-file-broken me-1"></i>Upload file
-                                            <input type="file" id="addUserProfileImage" class="form-control" accept="image/*" name="profile">
-                                        </div>
-                                        <span>JPG, GIF or PNG. Max size of 800K</span>
-                                    </div>
+                                <div class="mb-3">
+                                    <label class="form-label">{{ __('country_index_form_country_name') }} <span class="text-danger">*</span></label>
+                                    <input type="text" name="name" class="form-control" placeholder="Enter country name" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">First Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="addUserFirstName" name="first_name" required>
+                                    <label class="form-label">{{ __('country_index_form_country_code') }} <span class="text-danger">*</span></label>
+                                    <input type="text" name="code" class="form-control" placeholder="e.g., 91" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="addUserLastName" name="last_name" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Middle Name</label>
-                                    <input type="text" class="form-control" id="addUserMiddleName" name="middle_name">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Email <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" id="addUserEmail" name="email" required>
+                                    <label class="form-label">{{ __('country_index_form_short_name') }}</label>
+                                    <input type="text" name="short_name" class="form-control" placeholder="e.g., IND">
                                 </div>
                             </div>
                             <div class="col-md-12">
                                 <div class="mb-3">
-                                    <label class="form-label">Mobile <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="addUserMobile" name="mobile" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Password <span class="text-danger">*</span></label>
-                                    <div class="input-group input-group-flat pass-group">
-                                        <input type="password" class="form-control pass-input" id="addUserPassword" name="password" required>
-                                        <span class="input-group-text toggle-password" style="cursor: pointer;">
-                                            <i class="ti ti-eye-off"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                                    <div class="input-group input-group-flat pass-group">
-                                        <input type="password" class="form-control pass-input" id="addUserPasswordConfirm" name="password_confirmation" required>
-                                        <span class="input-group-text toggle-password" style="cursor: pointer;">
-                                            <i class="ti ti-eye-off"></i>
-                                        </span>
+                                    <label class="form-label">{{ __('status') }}</label>
+                                    <div class="form-check form-switch">
+                                        <input type="hidden" name="is_active" value="0">
+                                        <input class="form-check-input" type="checkbox" id="addCountryStatus" name="is_active" value="1" checked>
+                                        <label class="form-check-label" for="addCountryStatus">{{ __('active') }}</label>
                                     </div>
                                 </div>
                             </div>
@@ -178,121 +138,71 @@
                     <!-- /Basic Info -->
                 </div>
                 <div class="d-flex align-items-center justify-content-end">
-                    <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Create</button>
+                    <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas">{{ __('cancel') }}</a>
+                    <button type="submit" class="btn btn-primary">{{ __('create') }}</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Edit User Offcanvas -->
+    <!-- Edit Country Offcanvas -->
     <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_edit">
         <div class="offcanvas-header border-bottom">
-            <h5 class="fw-semibold">Edit User</h5>
+            <h5 class="fw-semibold">{{ __('country_index_edit_modal_title') }}</h5>
             <button type="button" class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle" data-bs-dismiss="offcanvas" aria-label="Close">
                 <i class="ti ti-x"></i>
             </button>
         </div>
         <div class="offcanvas-body">
-            <form id="editUserForm" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" id="editUserId" name="user_id">
-                <div>
-                    <!-- Basic Info -->
-                    <div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="avatar avatar-xxl border border-dashed me-3 flex-shrink-0">
-                                        <img id="editUserImagePreview" src="{{ asset('assets/img/users/user-01.jpg') }}" alt="img" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-                                    </div>
-                                    <div class="d-inline-flex flex-column align-items-start">
-                                        <div class="drag-upload-btn btn btn-sm btn-primary position-relative mb-2">
-                                            <i class="ti ti-file-broken me-1"></i>Upload file
-                                            <input type="file" id="editUserProfileImage" class="form-control" accept="image/*" name="profile">
-                                        </div>
-                                        <span>JPG, GIF or PNG. Max size of 800K</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">First Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="editUserFirstName" name="first_name" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="editUserLastName" name="last_name" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Middle Name</label>
-                                    <input type="text" class="form-control" id="editUserMiddleName" name="middle_name">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Email <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" id="editUserEmail" name="email" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Mobile <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="editUserMobile" name="mobile" required>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="editUserStatus" name="is_active" value="1">
-                                        <label class="form-check-label" for="editUserStatus">
-                                            Active
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Password (Leave blank to keep current)</label>
-                                    <div class="input-group input-group-flat pass-group">
-                                        <input type="password" class="form-control pass-input" id="editUserPassword" name="password">
-                                        <span class="input-group-text toggle-password" style="cursor: pointer;">
-                                            <i class="ti ti-eye-off"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Confirm Password</label>
-                                    <div class="input-group input-group-flat pass-group">
-                                        <input type="password" class="form-control pass-input" id="editUserPasswordConfirm" name="password_confirmation">
-                                        <span class="input-group-text toggle-password" style="cursor: pointer;">
-                                            <i class="ti ti-eye-off"></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- /Basic Info -->
+            <form id="editCountryForm">
+                <input type="hidden" name="id" id="editCountryId">
+                <div class="mb-3">
+                    <label class="form-label">{{ __('country_index_form_country_name') }} <span class="text-danger">*</span></label>
+                    <input type="text" name="name" id="editCountryName" class="form-control" placeholder="Enter country name" required>
                 </div>
-                <div class="d-flex align-items-center justify-content-end">
-                    <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div class="mb-3">
+                    <label class="form-label">{{ __('country_index_form_country_code') }} <span class="text-danger">*</span></label>
+                    <input type="text" name="code" id="editCountryCode" class="form-control" placeholder="e.g., 91" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ __('country_index_form_short_name') }}</label>
+                    <input type="text" name="short_name" id="editCountryShortName" class="form-control" placeholder="e.g., USA, GBR">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ __('status') }}</label>
+                    <div class="form-check form-switch">
+                        <input type="hidden" name="is_active" value="0">
+                        <input class="form-check-input" type="checkbox" id="editCountryStatus" name="is_active" value="1">
+                        <label class="form-check-label" for="editCountryStatus">{{ __('active') }}</label>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <button type="submit" class="btn btn-primary">{{ __('update') }}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">{{ __('close') }}</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Delete Modal (Keep your existing delete modal) -->
-    <div class="modal fade" id="delete_user">
-        <!-- ... Keep your existing delete modal code ... -->
-    </div> --}}
+    <!-- Delete Modal -->
+    <div class="modal fade" id="delete_country">
+        <div class="modal-dialog modal-dialog-centered modal-sm rounded-0">
+            <div class="modal-content rounded-0">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('country_index_delete_modal_title') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>{{ __('country_index_delete_modal_message') }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{{ __('cancel') }}</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteCountryBtn">{{ __('delete') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @endsection
 
@@ -312,7 +222,7 @@
             columns: [
                 {
                     field: 'country_name',
-                    header: 'Name',
+                    header: "{{ __('table_name') }}",
                     className: 'col-name',
                     render: (value, item) => {
                         return `
@@ -326,7 +236,7 @@
                 },
                 {
                     field: 'code',
-                    header: 'Code',
+                    header: "{{ __('code') }}",
                     className: 'col-code'
                 },
                 {
@@ -336,7 +246,7 @@
                 },
                 {
                     field: 'is_active',
-                    header: 'Status',
+                    header: "{{ __('table_status') }}",
                     className: 'col-status',
                     type: 'boolean'
                 }
@@ -355,6 +265,33 @@
         $(document).ready(function() {
             // Initialize datatable
             window.datatableInstance = new Datatable(countriesDatatableConfig);
+
+            // Handle add country form
+            handleFormSubmit({
+                formId: 'addCountryForm',
+                apiEndpoint: '/api/v1/super-admin/countries',
+                method: 'POST',
+                onSuccess: function() {
+                    const offcanvas = bootstrap.Offcanvas.getInstance(document.querySelector('#offcanvas_add'));
+                    if (offcanvas) offcanvas.hide();
+                    $('#addCountryForm')[0].reset();
+                    $('#addCountryStatus').prop('checked', true);
+                    window.datatableInstance.refresh();
+                }
+            });
+
+            // Handle edit country form
+            handleFormSubmit({
+                formId: 'editCountryForm',
+                apiEndpoint: '/api/v1/super-admin/countries',
+                method: 'PUT',
+                onSuccess: function() {
+                    const offcanvas = bootstrap.Offcanvas.getInstance(document.querySelector('#offcanvas_edit'));
+                    if (offcanvas) offcanvas.hide();
+                    window.datatableInstance.refresh();
+                }
+            });
+
 
             // Initialize common delete handler for single item delete
             handleCommonDelete({
@@ -380,11 +317,35 @@
                 }
             });
 
+            // Handle edit button click
+            $(document).on('click', '.edit-item-btn', function() {
+                const itemId = $(this).data('id');
+                loadItemForEdit(itemId, {
+                    modalId: '#offcanvas_edit',
+                    formId: 'editCountryForm',
+                    apiEndpoint: '/api/v1/super-admin/countries'
+                });
+            });
+
+            // Handle column management
+            $('.column-toggle').on('change', function() {
+                const columnClass = $(this).data('column');
+                const isChecked = $(this).is(':checked');
+                const table = $(`#${countriesDatatableConfig.containerId}`);
+                
+                const elements = table.find(`th.${columnClass}, td.${columnClass}`);
+                if (isChecked) {
+                    elements.removeClass('d-none').show();
+                } else {
+                    elements.addClass('d-none').hide();
+                }
+            });
+
             // Handle status filter
             $(document).on('change', '.status-filter', function() {
                 const selectedStatus = [];
                 $('.status-filter:checked').each(function() {
-                    selectedStatus.push($(this).val());
+                    selectedStatus.push(parseInt($(this).val()));
                 });
 
                 if (selectedStatus.length > 0) {
@@ -396,11 +357,21 @@
                 }
             });
 
+            // Handle sort options
+            $(document).on('click', '.sort-option', function(e) {
+                e.preventDefault();
+                const order = $(this).data('order');
+                if (window.datatableInstance) {
+                    window.datatableInstance.sort('created_at', order);
+                    showToast('Sorted by ' + (order === 'asc' ? 'Oldest' : 'Newest'), 'success');
+                }
+            });
+
             // Handle quick reset
             $('#quickReset').on('click', function() {
                 $('.status-filter').prop('checked', false);
                 window.datatableInstance.resetFilters();
-                showToast('All filters reset', 'success');
+                showToast("{{ __('filter_reset') }}", 'success');
             });
 
             // Handle date range filter
@@ -436,5 +407,30 @@
                 }, 100);
             }
         });
+    // Helper functions
+        function loadItemForEdit(itemId, moduleConfig) {
+            apiGet(`${moduleConfig.apiEndpoint}/${itemId}`)
+                .then(response => {
+                    const country = response.data.data;
+
+                    $('#editCountryId').val(country.id);
+                    $('#editCountryForm input[name="name"]').val(country.name || '');
+                    $('#editCountryForm input[name="code"]').val(country.code || '');
+                    $('#editCountryForm input[name="short_name"]').val(country.short_name || '');
+                    
+                    if (country.is_active === 1 || country.is_active === true || country.is_active === '1') {
+                        $('#editCountryStatus').prop('checked', true);
+                    } else {
+                        $('#editCountryStatus').prop('checked', false);
+                    }
+
+                    const editOffcanvas = new bootstrap.Offcanvas(document.querySelector(moduleConfig.modalId));
+                    editOffcanvas.show();
+                })
+                .catch(error => {
+                    console.error('Error loading item:', error);
+                    showToast('Failed to load item data', 'error');
+                });
+        }
     </script>
 @endsection

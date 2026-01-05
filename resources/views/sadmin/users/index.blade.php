@@ -577,16 +577,55 @@
         });
 
         // Helper functions (keep from your original code)
-        function setupPasswordToggle() {
+        // function setupPasswordToggle() {
+        //     $(document).on('click', '.toggle-password', function(e) {
+        //         e.preventDefault();
+        //         const $this = $(this);
+        //         const $input = $this.closest('.input-group').find('input');
+        //         const $icon = $this.find('i');
+                
+        //         const type = $input.attr('type') === 'password' ? 'text' : 'password';
+        //         $input.attr('type', type);
+        //         $icon.toggleClass('ti-eye-off ti-eye');
+        //     });
+        // }
+
+           function setupPasswordToggle() {
             $(document).on('click', '.toggle-password', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
+                
                 const $this = $(this);
-                const $input = $this.closest('.input-group').find('input');
+                const $input = $this.closest('.input-group').find('input[type="password"], input[type="text"]');
                 const $icon = $this.find('i');
                 
-                const type = $input.attr('type') === 'password' ? 'text' : 'password';
-                $input.attr('type', type);
-                $icon.toggleClass('ti-eye-off ti-eye');
+                if (!$input.length) return;
+                
+                const currentType = $input.attr('type');
+                const newType = currentType === 'password' ? 'text' : 'password';
+                
+                // Store current value
+                const currentValue = $input.val();
+                
+                // Remove the input from DOM temporarily
+                const $inputClone = $input.clone();
+                $inputClone.attr('type', newType);
+                $inputClone.val(currentValue);
+                
+                // Replace the old input with new type
+                $input.replaceWith($inputClone);
+                
+                // Update icon
+                if (newType === 'text') {
+                    $icon.removeClass('ti-eye-off').addClass('ti-eye');
+                } else {
+                    $icon.removeClass('ti-eye').addClass('ti-eye-off');
+                }
+                
+                console.log(`Toggled password visibility: ${currentType} → ${newType}`);
+                
+                // Re-attach event handlers to the new input if needed
+                setupPasswordToggle();
             });
         }
 

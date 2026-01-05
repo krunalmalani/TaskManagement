@@ -88,6 +88,9 @@
 								</a>
 								<ul>
 									<li><a href="{{ route('super-admin-countries-index') }}" class="{{ Route::currentRouteName() === 'super-admin-countries-index' ? 'active' : '' }}">Country Management</a></li>
+									<li><a href="{{ route('super-admin-states-index') }}" class="{{ Route::currentRouteName() === 'super-admin-states-index' ? 'active' : '' }}">State Management</a></li>
+									<li><a href="{{ route('super-admin-cities-index') }}" class="{{ Route::currentRouteName() === 'super-admin-cities-index' ? 'active' : '' }}">City Management</a></li>
+									<li><a href="{{ route('super-admin-currencies-index') }}" class="{{ Route::currentRouteName() === 'super-admin-currencies-index' ? 'active' : '' }}">Currency Management</a></li>
 								</ul>
 							</li>
 						</ul>

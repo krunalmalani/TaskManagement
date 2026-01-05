@@ -7,9 +7,12 @@ use App\Http\Controllers\AdminRolePermissionController;
 use App\Http\Controllers\AdminCompanyController;
 use App\Http\Controllers\AdminBranchController;
 use App\Http\Controllers\AdminDepartmentController;
-
+use App\Http\Controllers\sadmin\SuperAdminCityController;
 use App\Http\Controllers\sadmin\SuperAdminDashboardController;
 use App\Http\Controllers\sadmin\SuperAdminUserController;
+use App\Http\Controllers\sadmin\SuperAdminCountryController;
+use App\Http\Controllers\sadmin\SuperAdminCurrencyController;
+use App\Http\Controllers\sadmin\SuperAdminStateController;
 
 Route::prefix('admin')->group(function () {
     Route::get('/', [AdminAuthController::class, 'showLogin'])->name('login');
@@ -33,7 +36,10 @@ Route::prefix('admin')->group(function () {
 Route::prefix('super-admin')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [SuperAdminDashboardController::class, 'superAdminDashboard'])->name('super-admin-dashboard');
     Route::get('/users', [SuperAdminUserController::class, 'index'])->name('super-admin-users-index');
-    Route::get('/countries', [SuperAdminUserController::class, 'country'])->name('super-admin-countries-index');
+    Route::get('/countries', [SuperAdminCountryController::class, 'index'])->name('super-admin-countries-index');
+    Route::get('/states', [SuperAdminStateController::class, 'index'])->name('super-admin-states-index');
+    Route::get('/cities', [SuperAdminCityController::class, 'index'])->name('super-admin-cities-index');
+    Route::get('/currencies', [SuperAdminCurrencyController::class, 'index'])->name('super-admin-currencies-index');
 });
 
 Route::post('/store-session', [AdminSessionController::class, 'store']);

@@ -1,6 +1,6 @@
 @extends('layouts.auth')
 @section('title')
-<title>Login | Task management</title>
+<title>{{ __('login_title') }}</title>
 @endsection
 @section('css')
 @endsection
@@ -26,11 +26,11 @@
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <h3 class="mb-2">Sign In</h3>
-                                        <p class="mb-0">Access the CRMS panel using your email and passcode.</p>
+                                        <h3 class="mb-2">{{ __('signin') }}</h3>
+                                        <p class="mb-0">{{ __('signin_subtitle') }}</p>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Email Address</label>
+                                        <label class="form-label">{{ __('email_address') }}</label>
                                         <div class="input-group input-group-flat">
                                             <input type="email" id="email" class="form-control" required>
                                             <span class="input-group-text">
@@ -40,7 +40,7 @@
                                         <small id="email_error" class="text-danger"></small>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Password</label>
+                                        <label class="form-label">{{ __('password') }}</label>
                                         <div class="input-group input-group-flat pass-group">
                                             <input type="password" id="password" class="form-control pass-input" required>
                                             <span class="input-group-text toggle-password ">
@@ -55,20 +55,20 @@
                                             <input class="form-check-input mt-0" type="checkbox" value=""
                                                 id="checkebox-md" checked="">
                                             <label class="form-check-label text-dark ms-1" for="checkebox-md">
-                                                Remember Me
+                                                {{ __('remember_me') }}
                                             </label>
                                         </div>
                                         <div class="text-end">
                                             <a href="{{ route('forgot-password') }}"
-                                                class="link-danger fw-medium link-hover">Forgot Password?</a>
+                                                class="link-danger fw-medium link-hover">{{ __('forgot_password') }}</a>
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <button type="submit" id="loginBtn" class="btn btn-primary w-100">Sign In</button>
+                                        <button type="submit" id="loginBtn" class="btn btn-primary w-100">{{ __('signin') }}</button>
                                     </div>
                                     <div class="mb-3">
-                                        <p class="mb-0">New on our platform?<a href="{{ route('register') }}"
-                                                class="link-indigo fw-bold link-hover"> Create an account</a></p>
+                                        <p class="mb-0">{{ __('new_on_platform') }}<a href="{{ route('register') }}"
+                                                class="link-indigo fw-bold link-hover"> {{ __('create_account') }}</a></p>
                                     </div>
                                     {{-- <div class="or-login text-center position-relative mb-3">
                                         <h6 class="fs-14 mb-0 position-relative text-body">OR</h6>
@@ -98,8 +98,8 @@
                                     </div> --}}
                                 </div>
                                 <div class="text-center pb-4">
-                                    <p class="text-dark mb-0">Copyright &copy;
-                                        <script>document.write(new Date().getFullYear())</script> - Shreeda Consulting
+                                    <p class="text-dark mb-0">{{ __('copyright') }} &copy;
+                                        <script>document.write(new Date().getFullYear())</script> - {{ __('shreeda_consulting') }}
                                     </p>
                                 </div>
                             </form>

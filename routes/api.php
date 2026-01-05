@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AdminAuthApiController;
+use App\Http\Controllers\Api\V1\AdminCompanyApiController;
 
 use App\Http\Controllers\Api\V1\sadmin\SuperAdminUserApiController;
 use App\Http\Controllers\Api\V1\sadmin\SuperAdminCountryApiController;
@@ -17,6 +18,15 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:api')->group(function () {
         Route::get('/me', [AdminAuthApiController::class, 'me']);
         Route::post('/refresh', [AdminAuthApiController::class, 'refresh']);
+
+        // Admin Company Management APIs
+        Route::get('/companies', [AdminCompanyApiController::class, 'index']);
+        Route::post('/companies', [AdminCompanyApiController::class, 'store']);
+        Route::post('/companies/bulk-delete', [AdminCompanyApiController::class, 'bulkDestroy']);
+        Route::get('/companies/{id}', [AdminCompanyApiController::class, 'show']);
+        Route::put('/companies/{id}', [AdminCompanyApiController::class, 'update']);
+        Route::post('/companies/{id}', [AdminCompanyApiController::class, 'update']);
+        Route::delete('/companies/{id}', [AdminCompanyApiController::class, 'destroy']);
 
         // Super Admin User Management APIs
         Route::prefix('super-admin')->group(function () {

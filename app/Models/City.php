@@ -9,6 +9,7 @@ class City extends Model
     protected $table = 'cities';
 
     protected $fillable = [
+        'country_id',
         'state_id', 
         'name', 
         'is_active',
@@ -28,7 +29,15 @@ class City extends Model
     ];
 
     /**
-     * Relationship: State belongs to Country
+     * Relationship: City belongs to Country
+     */
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id', 'id');
+    }
+
+    /**
+     * Relationship: City belongs to State
      */
     public function state()
     {

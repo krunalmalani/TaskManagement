@@ -42,6 +42,12 @@
             'sortable' => true
         ],
         [
+            'field' => 'country',
+            'header' => __('country'),
+            'className' => 'col-country',
+            'sortable' => true
+        ],
+        [
             'field' => 'state',
             'header' => __('state'),
             'className' => 'col-state',
@@ -111,8 +117,16 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="mb-3">
+                                    <label class="form-label">{{ __('country') }} <span class="text-danger">*</span></label>
+                                    <select name="country_id" class="form-select select2" id="addCountrySelect" required>
+                                        <option value="">Select Country</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
                                     <label class="form-label">{{ __('city_index_form_state_id') }} <span class="text-danger">*</span></label>
-                                    <select name="state_id" class="form-select select2" required>
+                                    <select name="state_id" class="form-select select2" id="addStateSelect" required>
                                         <option value="">Select State</option>
                                     </select>
                                 </div>
@@ -156,8 +170,14 @@
             <form id="editCityForm">
                 <input type="hidden" name="id" id="editStateId">
                 <div class="mb-3">
+                    <label class="form-label">{{ __('country') }} <span class="text-danger">*</span></label>
+                    <select name="country_id" class="form-select select2" id="editCountrySelect" required>
+                        <option value="">Select Country</option>
+                    </select>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">{{ __('city_index_form_state_id') }} <span class="text-danger">*</span></label>
-                    <select name="state_id" class="form-select select2" required>
+                    <select name="state_id" class="form-select select2" id="editStateSelect" required>
                         <option value="">Select State</option>
                     </select>
                 </div>
@@ -173,9 +193,9 @@
                         <label class="form-check-label" for="editCityStatus">{{ __('city_index_form_active') }}</label>
                     </div>
                 </div>
-                <div class="d-flex align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center justify-content-end">
+                    <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas">{{ __('city_index_buttons_cancel') }}</a>
                     <button type="submit" class="btn btn-primary">{{ __('city_index_buttons_update') }}</button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">{{ __('city_index_buttons_close') }}</button>
                 </div>
             </form>
         </div>
@@ -223,6 +243,15 @@ const statesDatatableConfig = {
             type: 'text'
         },
         {
+            field: 'country',
+            header: "{{ __('country') }}",
+            className: 'col-country',
+            type: 'text',
+            render: function(value, item) {
+                return item.country ? item.country.name : 'N/A';
+            }
+        },
+        {
             field: 'state',
             header: "{{ __('state') }}",
             className: 'col-state',
@@ -262,38 +291,63 @@ let editModuleConfig = {
 // ========================================
 
 $(document).ready(function() {
-    // Load states for dropdowns
+    // Load countries and states for dropdowns
+    loadCountriesForDropdowns();
     loadStatesForDropdowns();
 
     // Initialize datatable
     window.datatableInstance = new Datatable(statesDatatableConfig);
 
-    // Handle add state form
-    handleFormSubmit({
-        formId: 'addCityForm',
-        apiEndpoint: '/api/v1/super-admin/cities',
-        method: 'POST',
-        onSuccess: function() {
-            const offcanvas = bootstrap.Offcanvas.getInstance(document.querySelector('#offcanvas_add'));
-            if (offcanvas) offcanvas.hide();
-            $('#addCityForm')[0].reset();
-            // Reset Select2
-            $('#addCityForm select[name="state_id"]').val(null).trigger('change');
-            $('#addCityStatus').prop('checked', true);
-            window.datatableInstance.refresh();
-        }
+    // Handle add city form - use direct apiPost
+    $('#addCityForm').off('submit').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            country_id: $(this).find('input[name="country_id"], select[name="country_id"]').val(),
+            state_id: $(this).find('input[name="state_id"], select[name="state_id"]').val(),
+            name: $(this).find('input[name="name"]').val(),
+            is_active: $(this).find('input[name="is_active"]').prop('checked') ? 1 : 0
+        };
+
+        apiPost('/api/v1/super-admin/cities', formData)
+            .then(response => {
+                showToast("{{ __('city_created_success') }}", 'success');
+                const offcanvas = bootstrap.Offcanvas.getInstance(document.querySelector('#offcanvas_add'));
+                if (offcanvas) offcanvas.hide();
+                $('#addCityForm')[0].reset();
+                $('#addCityForm select').val(null).trigger('change');
+                $('#addCityStatus').prop('checked', true);
+                window.datatableInstance.refresh();
+            })
+            .catch(error => {
+                const errorMessage = error.response?.data?.message || 'Failed to create city';
+                showToast(errorMessage, 'error');
+            });
     });
 
-    // Handle edit City form
-    handleFormSubmit({
-        formId: 'editCityForm',
-        apiEndpoint: '/api/v1/super-admin/cities',
-        method: 'PUT',
-        onSuccess: function() {
-            const offcanvas = bootstrap.Offcanvas.getInstance(document.querySelector('#offcanvas_edit'));
-            if (offcanvas) offcanvas.hide();
-            window.datatableInstance.refresh();
-        }
+    // Handle edit City form - use direct apiPut
+    $('#editCityForm').off('submit').on('submit', function(e) {
+        e.preventDefault();
+        
+        const cityId = $('#editStateId').val();
+        const formData = {
+            country_id: $(this).find('input[name="country_id"], select[name="country_id"]').val(),
+            state_id: $(this).find('input[name="state_id"], select[name="state_id"]').val(),
+            name: $(this).find('input[name="name"]').val(),
+            is_active: $(this).find('input[name="is_active"]').prop('checked') ? 1 : 0
+        };
+
+        apiPut(`/api/v1/super-admin/cities/${cityId}`, formData)
+            .then(response => {
+                showToast("{{ __('city_updated_success') }}", 'success');
+                const offcanvas = bootstrap.Offcanvas.getInstance(document.querySelector('#offcanvas_edit'));
+                if (offcanvas) offcanvas.hide();
+                window.datatableInstance.refresh();
+            })
+            .catch(error => {
+                const errorMessage = error.response?.data?.message || 'Failed to update city';
+                showToast(errorMessage, 'error');
+            });
     });
 
     // Handle delete
@@ -388,71 +442,153 @@ $(document).ready(function() {
 });
 
 
-function loadStatesForDropdowns() {
-    apiGet('/api/v1/super-admin/get-states')
+function loadCountriesForDropdowns() {
+    apiGet('/api/v1/super-admin/get-countries')
         .then(response => {
-            const states = response.data.data;
+            const countries = Array.isArray(response.data) ? response.data : (Array.isArray(response.data.data) ? response.data.data : []);
 
-            const addstateSelect = $('#addCityForm select[name="state_id"]');
-            const editstateSelect = $('#editCityForm select[name="state_id"]');
+            const addCountrySelect = $('#addCityForm select[name="country_id"]');
+            const editCountrySelect = $('#editCityForm select[name="country_id"]');
 
             // Destroy previous Select2
-            if (addstateSelect.hasClass("select2-hidden-accessible")) {
-                addstateSelect.select2('destroy');
+            if (addCountrySelect.hasClass("select2-hidden-accessible")) {
+                addCountrySelect.select2('destroy');
             }
-            if (editstateSelect.hasClass("select2-hidden-accessible")) {
-                editstateSelect.select2('destroy');
+            if (editCountrySelect.hasClass("select2-hidden-accessible")) {
+                editCountrySelect.select2('destroy');
             }
 
             // Reset options
-            addstateSelect.html('<option value="">Select State</option>');
-            editstateSelect.html('<option value="">Select State</option>');
+            addCountrySelect.html('<option value="">Select Country</option>');
+            editCountrySelect.html('<option value="">Select Country</option>');
 
-            states.forEach(state => {
-                addstateSelect.append(
-                    `<option value="${state.id}">${state.name}</option>`
+            countries.forEach(country => {
+                addCountrySelect.append(
+                    `<option value="${country.id}">${country.name}</option>`
                 );
-                editstateSelect.append(
-                    `<option value="${state.id}">${state.name}</option>`
+                editCountrySelect.append(
+                    `<option value="${country.id}">${country.name}</option>`
                 );
             });
 
             // Init Select2 (Add)
-            addstateSelect.select2({
-                placeholder: 'Select State',
+            addCountrySelect.select2({
+                placeholder: 'Select Country',
                 allowClear: true,
                 width: '100%',
                 dropdownParent: $('#offcanvas_add')
             });
 
             // Init Select2 (Edit)
-            editstateSelect.select2({
-                placeholder: 'Select State',
+            editCountrySelect.select2({
+                placeholder: 'Select Country',
                 allowClear: true,
                 width: '100%',
                 dropdownParent: $('#offcanvas_edit')
             });
+
+            // Add change event listeners
+            addCountrySelect.on('change', function() {
+                const countryId = $(this).val();
+                if (countryId) {
+                    loadStatesByCountry(countryId, 'add');
+                } else {
+                    $('#addCityForm select[name="state_id"]').html('<option value="">Select State</option>').trigger('change');
+                }
+            });
+
+            editCountrySelect.on('change', function() {
+                const countryId = $(this).val();
+                if (countryId) {
+                    loadStatesByCountry(countryId, 'edit');
+                } else {
+                    $('#editCityForm select[name="state_id"]').html('<option value="">Select State</option>').trigger('change');
+                }
+            });
         })
         .catch(error => {
-            console.error('Error loading states:', error);
-            showToast('Failed to load states', 'error');
+            console.error('Error loading countries:', error);
+            showToast('Failed to load countries', 'error');
         });
+}
+
+function loadStatesByCountry(countryId, formType) {
+    return new Promise((resolve, reject) => {
+        apiGet(`/api/v1/super-admin/get-states-by-country/${countryId}`)
+            .then(response => {
+                const states = response.data.data;
+                const stateSelect = formType === 'add' 
+                    ? $('#addCityForm select[name="state_id"]')
+                    : $('#editCityForm select[name="state_id"]');
+
+                // Destroy previous Select2
+                if (stateSelect.hasClass("select2-hidden-accessible")) {
+                    stateSelect.select2('destroy');
+                }
+
+                // Reset options
+                stateSelect.html('<option value="">Select State</option>');
+
+                states.forEach(state => {
+                    stateSelect.append(
+                        `<option value="${state.id}">${state.name}</option>`
+                    );
+                });
+
+                // Reinit Select2
+                stateSelect.select2({
+                    placeholder: 'Select State',
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: formType === 'add' ? $('#offcanvas_add') : $('#offcanvas_edit')
+                });
+
+                resolve();
+            })
+            .catch(error => {
+                console.error('Error loading states:', error);
+                showToast('Failed to load states', 'error');
+                reject(error);
+            });
+    });
+}
+
+function loadStatesForDropdowns() {
+    // This function is kept for backward compatibility but now we load states
+    // based on selected country in the loadStatesByCountry function
 }
 
 function loadItemForEdit(itemId, moduleConfig) {
     apiGet(`${moduleConfig.apiEndpoint}/${itemId}`)
         .then(response => {
-            const state = response.data.data;
+            const city = response.data.data;
 
-            $('#editStateId').val(state.id);
+            $('#editStateId').val(city.id);
             
-            // Set Select2 value properly
-            const stateSelect = $('#editCityForm select[name="state_id"]');
-            stateSelect.val(state.state_id || null).trigger('change');
+            // Set country Select2 value
+            const countrySelect = $('#editCityForm select[name="country_id"]');
+            countrySelect.val(city.country_id || null).trigger('change');
             
-            $('#editCityForm input[name="name"]').val(state.name || '');
+            // After country is set, load states for that country and then set state value
+            if (city.country_id) {
+                loadStatesByCountry(city.country_id, 'edit')
+                    .then(() => {
+                        // States loaded successfully, now set the state value
+                        const stateSelect = $('#editCityForm select[name="state_id"]');
+                        stateSelect.val(city.state_id || null).trigger('change');
+                    })
+                    .catch(error => {
+                        console.error('Error loading states:', error);
+                    });
+            } else {
+                // If no country_id, just set state to empty
+                const stateSelect = $('#editCityForm select[name="state_id"]');
+                stateSelect.val(null).trigger('change');
+            }
             
-            if (state.is_active === 1 || state.is_active === true || state.is_active === '1') {
+            $('#editCityForm input[name="name"]').val(city.name || '');
+            
+            if (city.is_active === 1 || city.is_active === true || city.is_active === '1') {
                 $('#editCityStatus').prop('checked', true);
             } else {
                 $('#editCityStatus').prop('checked', false);

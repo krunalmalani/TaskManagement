@@ -87,7 +87,7 @@ class SuperAdminCountryApiController extends BaseController
                 'short_name' => 'nullable|string|max:10',
             ]);
 
-            $validated['is_active'] = 1;
+            $validated['is_active'] = $request->input('is_active', 1) ? 1 : 0;
             
             // Get authenticated user ID
             $auth = Session::get('user');

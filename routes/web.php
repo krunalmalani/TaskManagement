@@ -13,6 +13,8 @@ use App\Http\Controllers\sadmin\SuperAdminUserController;
 use App\Http\Controllers\sadmin\SuperAdminCountryController;
 use App\Http\Controllers\sadmin\SuperAdminCurrencyController;
 use App\Http\Controllers\sadmin\SuperAdminStateController;
+use App\Http\Controllers\sadmin\SuperAdminTimezoneController;
+use App\Http\Controllers\sadmin\SuperAdminLanguageController;
 
 Route::prefix('admin')->group(function () {
     Route::get('/', [AdminAuthController::class, 'showLogin'])->name('login');
@@ -40,6 +42,8 @@ Route::prefix('super-admin')->middleware(['auth'])->group(function () {
     Route::get('/states', [SuperAdminStateController::class, 'index'])->name('super-admin-states-index');
     Route::get('/cities', [SuperAdminCityController::class, 'index'])->name('super-admin-cities-index');
     Route::get('/currencies', [SuperAdminCurrencyController::class, 'index'])->name('super-admin-currencies-index');
+    Route::get('/timezones', [SuperAdminTimezoneController::class, 'index'])->name('super-admin-timezone-index');
+    Route::get('/languages', [SuperAdminLanguageController::class, 'index'])->name('super-admin-languages-index');
 });
 
 Route::post('/store-session', [AdminSessionController::class, 'store']);

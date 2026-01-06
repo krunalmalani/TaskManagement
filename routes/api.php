@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\V1\sadmin\SuperAdminCountryApiController;
 use App\Http\Controllers\Api\V1\sadmin\SuperAdminStateApiController;
 use App\Http\Controllers\Api\V1\sadmin\SuperAdminCityApiController;
 use App\Http\Controllers\Api\V1\sadmin\SuperAdminCurrencyApiController;
+use App\Http\Controllers\Api\V1\sadmin\SuperAdminTimezoneApiController;
+use App\Http\Controllers\Api\V1\sadmin\SuperAdminLanguageApiController;
 
 Route::prefix('v1')->group(function () {
     // Public authentication routes (no middleware required)
@@ -63,6 +65,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/cities/{id}', [SuperAdminCityApiController::class, 'update']);
             Route::delete('/cities/{id}', [SuperAdminCityApiController::class, 'destroy']);
             Route::get('/get-states', [SuperAdminCityApiController::class, 'getStates']);
+            Route::get('/get-states-by-country/{country_id}', [SuperAdminCityApiController::class, 'getStatesByCountry']);
 
             Route::get('/currencies', [SuperAdminCurrencyApiController::class, 'index']);
             Route::post('/currencies', [SuperAdminCurrencyApiController::class, 'store']);
@@ -71,6 +74,20 @@ Route::prefix('v1')->group(function () {
             Route::put('/currencies/{id}', [SuperAdminCurrencyApiController::class, 'update']);
             Route::delete('/currencies/{id}', [SuperAdminCurrencyApiController::class, 'destroy']);
             Route::get('/get-currencies-countries', [SuperAdminCurrencyApiController::class, 'getCountries']);
+
+            Route::get('/timezones', [SuperAdminTimezoneApiController::class, 'index']);
+            Route::post('/timezones', [SuperAdminTimezoneApiController::class, 'store']);
+            Route::post('/timezones/bulk-delete', [SuperAdminTimezoneApiController::class, 'bulkDestroy']);
+            Route::get('/timezones/{id}', [SuperAdminTimezoneApiController::class, 'show']);
+            Route::put('/timezones/{id}', [SuperAdminTimezoneApiController::class, 'update']);
+            Route::delete('/timezones/{id}', [SuperAdminTimezoneApiController::class, 'destroy']);
+
+            Route::get('/languages', [SuperAdminLanguageApiController::class, 'index']);
+            Route::post('/languages', [SuperAdminLanguageApiController::class, 'store']);
+            Route::post('/languages/bulk-delete', [SuperAdminLanguageApiController::class, 'bulkDestroy']);
+            Route::get('/languages/{id}', [SuperAdminLanguageApiController::class, 'show']);
+            Route::put('/languages/{id}', [SuperAdminLanguageApiController::class, 'update']);
+            Route::delete('/languages/{id}', [SuperAdminLanguageApiController::class, 'destroy']);
         });
     });
 });

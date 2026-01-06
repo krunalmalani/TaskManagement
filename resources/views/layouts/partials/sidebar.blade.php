@@ -91,6 +91,8 @@
 									<li><a href="{{ route('super-admin-states-index') }}" class="{{ Route::currentRouteName() === 'super-admin-states-index' ? 'active' : '' }}">State Management</a></li>
 									<li><a href="{{ route('super-admin-cities-index') }}" class="{{ Route::currentRouteName() === 'super-admin-cities-index' ? 'active' : '' }}">City Management</a></li>
 									<li><a href="{{ route('super-admin-currencies-index') }}" class="{{ Route::currentRouteName() === 'super-admin-currencies-index' ? 'active' : '' }}">Currency Management</a></li>
+									<li><a href="{{ route('super-admin-timezone-index') }}" class="{{ Route::currentRouteName() === 'super-admin-timezone-index' ? 'active' : '' }}">Timezone Management</a></li>
+									<li><a href="{{ route('super-admin-languages-index') }}" class="{{ Route::currentRouteName() === 'super-admin-languages-index' ? 'active' : '' }}">Language Management</a></li>
 								</ul>
 							</li>
 						</ul>

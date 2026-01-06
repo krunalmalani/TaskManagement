@@ -125,7 +125,8 @@
     <script src="{{asset('assets/plugins/datatables/js/dataTables.bootstrap5.min.js')}}"></script>
 
     <!-- Axios for API calls -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> --}}
+    <script src="{{asset('assets/js/axios.min.js')}}"></script>
 
     <!-- Common Utilities -->
     <script src="{{asset('assets/js/common.js')}}"></script>

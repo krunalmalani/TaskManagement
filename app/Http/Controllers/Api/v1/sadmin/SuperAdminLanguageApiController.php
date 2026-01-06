@@ -4,30 +4,26 @@ namespace App\Http\Controllers\Api\V1\sadmin;
 use App\Http\Controllers\Api\V1\BaseController;
 
 use Illuminate\Http\Request;
-use App\Models\Currency;
-use App\Models\Country;
+use Illuminate\Validation\Rule;
+use App\Models\Language;
 use Illuminate\Support\Facades\Session;
 
-class SuperAdminCurrencyApiController extends BaseController
+class SuperAdminLanguageApiController extends BaseController
 {
     /**
-     * Get all currencies via API (for DataTables)
+     * Get all languages via API (for DataTables)
      */
     public function index(Request $request)
     {
         try {
-            $query = Currency::where('is_deleted', 0)->with('country');
+            $query = Language::where('is_deleted', 0);
 
             // Search functionality
             if ($request->has('search') && $request->search != '') {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
                     $q->where('name', 'like', '%' . $search . '%')
-                      ->orWhere('code', 'like', '%' . $search . '%')
-                      ->orWhere('symbol', 'like', '%' . $search . '%')
-                      ->orWhereHas('country', function($countryQuery) use ($search) {
-                          $countryQuery->where('name', 'like', '%' . $search . '%');
-                      });
+                      ->orWhere('short_name', 'like', '%' . $search . '%');
                 });
             }
 
@@ -41,11 +37,6 @@ class SuperAdminCurrencyApiController extends BaseController
                 if (!empty($statusValues)) {
                     $query->whereIn('is_active', $statusValues);
                 }
-            }
-
-            // Filter by country
-            if ($request->has('country_id') && $request->country_id != '') {
-                $query->where('country_id', $request->country_id);
             }
 
             // Filter by date range (created_at)
@@ -68,36 +59,50 @@ class SuperAdminCurrencyApiController extends BaseController
 
             // Pagination
             $perPage = $request->get('per_page', 10);
-            $currencies = $query->paginate($perPage);
+            $languages = $query->paginate($perPage);
 
             $data = [
-                'data' => $currencies->items(),
-                'total' => $currencies->total(),
-                'per_page' => $currencies->perPage(),
-                'current_page' => $currencies->currentPage(),
-                'last_page' => $currencies->lastPage(),
+                'data' => $languages->items(),
+                'total' => $languages->total(),
+                'per_page' => $languages->perPage(),
+                'current_page' => $languages->currentPage(),
+                'last_page' => $languages->lastPage(),
             ];
 
-            return $this->sendResponse($data, 'Currencies retrieved successfully', 200);
+            return $this->sendResponse($data, 'Languages retrieved successfully', 200);
         } catch (\Exception $e) {
-            return $this->sendError('Failed to retrieve currencies: ' . $e->getMessage(), 400);
+            return $this->sendError('Failed to retrieve languages: ' . $e->getMessage(), 400);
         }
     }
 
     /**
-     * Store a newly created currency
+     * Store a newly created language
      */
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
-                'country_id' => 'required|exists:countries,id,is_deleted,0',
-                'name' => 'required|string|max:255|unique:currencies,name,NULL,id,country_id,' . $request->country_id . ',is_deleted,0',
-                'code' => 'required|string|max:30',
-                'symbol' => 'required|string|max:30',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('languages', 'name')->where('is_deleted', 0)
+                ],
+                'short_name' => [
+                    'required',
+                    'string',
+                    'max:2',
+                    Rule::unique('languages', 'short_name')->where('is_deleted', 0)
+                ],
+                'is_active' => 'sometimes|in:0,1',
             ]);
 
-            $validated['is_active'] = $request->input('is_active', 1) ? 1 : 0;
+            // Set is_active default to 1 if not provided
+            if (!isset($validated['is_active'])) {
+                $validated['is_active'] = 1;
+            } else {
+                $validated['is_active'] = (int) $validated['is_active'];
+            }
             
             // Get authenticated user ID
             $auth = Session::get('user');
@@ -107,42 +112,53 @@ class SuperAdminCurrencyApiController extends BaseController
                 $validated['created_by'] = auth()->id() ?? null;
             }
 
-            $currency = Currency::create($validated);
-            $currency->load('country');
+            $language = Language::create($validated);
 
-            return $this->sendResponse($currency, 'Currency created successfully', 201);
+            return $this->sendResponse($language, 'Language created successfully', 201);
         } catch (\Exception $e) {
-            return $this->sendError('Failed to create currency: ' . $e->getMessage(), 400);
+            return $this->sendError('Failed to create language: ' . $e->getMessage(), 400);
         }
     }
 
     /**
-     * Display the specified currency
+     * Display the specified language
      */
     public function show($id)
     {
         try {
-            $currency = Currency::where('is_deleted', 0)->with('country')->findOrFail($id);
-            return $this->sendResponse($currency, 'Currency retrieved successfully', 200);
+            $language = Language::where('is_deleted', 0)->findOrFail($id);
+            return $this->sendResponse($language, 'Language retrieved successfully', 200);
         } catch (\Exception $e) {
-            return $this->sendError('Currency not found', 404);
+            return $this->sendError('Language not found', 404);
         }
     }
 
     /**
-     * Update the specified currency
+     * Update the specified language
      */
     public function update(Request $request, $id)
     {
         try {
-            // Only update non-deleted currencies
-            $currency = Currency::where('is_deleted', 0)->findOrFail($id);
+            // Only update non-deleted languages
+            $language = Language::where('is_deleted', 0)->findOrFail($id);
 
             $validated = $request->validate([
-                'country_id' => 'required|exists:countries,id,is_deleted,0',
-                'name' => 'required|string|max:255|unique:currencies,name,' . $id . ',id,country_id,' . $request->country_id . ',is_deleted,0',
-                'code' => 'required|string|max:30',
-                'symbol' => 'required|string|max:30',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('languages', 'name')
+                        ->ignore($id, 'id')
+                        ->where('is_deleted', 0)
+                ],
+                'short_name' => [
+                    'required',
+                    'string',
+                    'max:2',
+                    Rule::unique('languages', 'short_name')
+                        ->ignore($id, 'id')
+                        ->where('is_deleted', 0)
+                ],
                 'is_active' => 'required|in:0,1',
             ]);
 
@@ -157,45 +173,44 @@ class SuperAdminCurrencyApiController extends BaseController
                 $validated['updated_by'] = auth()->id() ?? null;
             }
 
-            $currency->update($validated);
-            $currency->load('country');
+            $language->update($validated);
 
-            return $this->sendResponse($currency, 'Currency updated successfully', 200);
+            return $this->sendResponse($language, 'Language updated successfully', 200);
         } catch (\Exception $e) {
-            return $this->sendError('Failed to update currency: ' . $e->getMessage(), 400);
+            return $this->sendError('Failed to update language: ' . $e->getMessage(), 400);
         }
     }
 
     /**
-     * Delete the specified currency (soft delete)
+     * Delete the specified language (soft delete)
      */
     public function destroy($id)
     {
         try {
-            $currency = Currency::where('is_deleted', 0)->findOrFail($id);
+            $language = Language::where('is_deleted', 0)->findOrFail($id);
 
             // Soft delete
-            $currency->is_deleted = 1;
-            $currency->deleted_at = now();
+            $language->is_deleted = 1;
+            $language->deleted_at = now();
             
             // Get authenticated user ID from session or auth guard
             $auth = Session::get('user');
             if ($auth && isset($auth->id)) {
-                $currency->deleted_by = $auth->id;
+                $language->deleted_by = $auth->id;
             } else {
-                $currency->deleted_by = auth()->id() ?? null;
+                $language->deleted_by = auth()->id() ?? null;
             }
             
-            $currency->save();
+            $language->save();
 
-            return $this->sendResponse(null, 'Currency deleted successfully', 200);
+            return $this->sendResponse(null, 'Language deleted successfully', 200);
         } catch (\Exception $e) {
-            return $this->sendError('Failed to delete currency: ' . $e->getMessage(), 400);
+            return $this->sendError('Failed to delete language: ' . $e->getMessage(), 400);
         }
     }
 
     /**
-     * Bulk delete multiple currencies (soft delete)
+     * Bulk delete multiple languages (soft delete)
      */
     public function bulkDestroy(Request $request)
     {
@@ -215,35 +230,17 @@ class SuperAdminCurrencyApiController extends BaseController
                 $deletedBy = auth()->id() ?? null;
             }
             
-            // Soft delete multiple currencies (only non-deleted records)
-            $count = Currency::where('is_deleted', 0)->whereIn('id', $ids)
+            // Soft delete multiple languages (only non-deleted records)
+            $count = Language::where('is_deleted', 0)->whereIn('id', $ids)
                         ->update([
                             'is_deleted' => 1,
                             'deleted_at' => now(),
                             'deleted_by' => $deletedBy,
                         ]);
             
-            return $this->sendResponse(null, "$count currencies deleted successfully", 200);
+            return $this->sendResponse(null, "$count languages deleted successfully", 200);
         } catch (\Exception $e) {
-            return $this->sendError('Failed to delete currencies: ' . $e->getMessage(), 400);
-        }
-    }
-
-    /**
-     * Get all countries for dropdown
-     */
-    public function getCountries()
-    {
-        try {
-            $countries = Country::where('is_deleted', 0)
-                ->where('is_active', 1)
-                ->orderBy('name', 'asc')
-                ->select('id', 'name')
-                ->get();
-
-            return $this->sendResponse($countries, 'Countries retrieved successfully', 200);
-        } catch (\Exception $e) {
-            return $this->sendError('Failed to retrieve countries: ' . $e->getMessage(), 400);
+            return $this->sendError('Failed to delete languages: ' . $e->getMessage(), 400);
         }
     }
 }

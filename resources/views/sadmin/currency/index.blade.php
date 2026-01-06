@@ -150,6 +150,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">{{ __('status') }}</label>
                                     <div class="form-check form-switch">
+                                        <input type="hidden" name="is_active" value="0">
                                         <input class="form-check-input" type="checkbox" id="addCurrencyStatus" name="is_active" value="1" checked>
                                         <label class="form-check-label" for="addCurrencyStatus">{{ __('currency_index_form_active') }}</label>
                                     </div>
@@ -203,9 +204,9 @@
                         <label class="form-check-label" for="editCurrencyStatus">{{ __('currency_index_form_active') }}</label>
                     </div>
                 </div>
-                <div class="d-flex align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center justify-content-end">
+                    <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas">{{ __('cancel') }}</a>
                     <button type="submit" class="btn btn-primary">{{ __('update') }}</button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">{{ __('close') }}</button>
                 </div>
             </form>
         </div>

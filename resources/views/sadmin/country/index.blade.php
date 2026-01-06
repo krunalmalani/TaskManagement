@@ -176,9 +176,9 @@
                         <label class="form-check-label" for="editCountryStatus">{{ __('active') }}</label>
                     </div>
                 </div>
-                <div class="d-flex align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center justify-content-end">
+                    <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas">{{ __('cancel') }}</a>
                     <button type="submit" class="btn btn-primary">{{ __('update') }}</button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="offcanvas">{{ __('close') }}</button>
                 </div>
             </form>
         </div>
@@ -294,27 +294,21 @@
 
 
             // Initialize common delete handler for single item delete
-            handleCommonDelete({
+            handleDelete({
                 deleteButtonSelector: '.delete-item-btn',
+                confirmSelector: '#delete_country',
+                confirmButtonId: 'confirmDeleteCountryBtn',
                 apiEndpoint: '/api/v1/super-admin/countries',
-                itemName: 'country',
                 onSuccess: () => window.datatableInstance.refresh()
             });
 
             // Handle bulk delete using common function
             handleBulkDelete({
                 buttonSelector: '#bulkDeleteBtn',
-                confirmSelector: '#commonDeleteModal',
-                confirmButtonId: 'commonDeleteConfirmBtn',
+                confirmSelector: '#delete_country',
+                confirmButtonId: 'confirmDeleteCountryBtn',
                 apiEndpoint: '/api/v1/super-admin/countries',
-                itemName: 'country',
-                onSuccess: () => {
-                    // Show bulk delete confirmation modal
-                    const selectedIds = window.datatableInstance.selectedItems;
-                    if (selectedIds.length > 0) {
-                        showCommonBulkDeleteConfirmation(selectedIds, 'country', '/api/v1/super-admin/countries');
-                    }
-                }
+                onSuccess: () => window.datatableInstance.refresh()
             });
 
             // Handle edit button click
